@@ -1,34 +1,37 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
+require('dotenv').config();
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const cors = require('cors');
+
+const corsOptions = require('./config/cors.config');
+const errorHandler = require('./middleware/error.middleware');
+const logger = require('./utils/logger');
+const healthRoutes = require('./routes/health.routes');
+const initializeSocket = require('./socket');
 
 const app = express();
-
-app.use(cors());
-
 const server = http.createServer(app);
 
+// Initialize Socket.IO
 const io = new Server(server, {
-    cors: {
-        origin: "http://localhost:5173"
-    }
+  cors: corsOptions,
 });
+initializeSocket(io);
 
-io.on("connection", (socket) => {
+// Middleware
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-    console.log("Connected:", socket.id);
+// Routes
+app.use('/api', healthRoutes);
 
-    socket.on("disconnect", () => {
-        console.log("Disconnected");
-    });
+// Error Handling Middleware
+app.use(errorHandler);
 
-});
+const PORT = process.env.PORT || 5000;
 
-server.listen(8000, () => {
-    console.log("Server running on 8000");
-});
-
-app.get("/", (req, res) => {
-    res.send("Hello World");
+server.listen(PORT, () => {
+  logger.info(`Server is running on port ${PORT}`);
 });
