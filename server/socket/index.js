@@ -84,6 +84,22 @@ const initializeSocket = (io) => {
       }
     });
 
+    socket.on('end-pairing', () => {
+      const device = deviceRegistry.getDeviceBySocketId(socket.id);
+      if (device && device.partnerId) {
+        const partner = deviceRegistry.getDeviceBySocketId(device.partnerId);
+        
+        // Reset both to idle
+        deviceRegistry.updateDeviceStatus(socket.id, 'idle');
+        if (partner) {
+          deviceRegistry.updateDeviceStatus(partner.socketId, 'idle');
+          io.to(partner.socketId).emit('pairing-ended', { message: 'Partner disconnected.' });
+        }
+        
+        socket.emit('pairing-ended', { message: 'Disconnected successfully.' });
+      }
+    });
+
     socket.on('disconnect', () => {
       logger.info(`Socket disconnected: ${socket.id}`);
       

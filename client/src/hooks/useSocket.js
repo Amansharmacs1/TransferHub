@@ -54,6 +54,12 @@ export const useSocket = () => {
       setStatus('idle');
     }
 
+    function onPairingEnded({ message }) {
+      setPartnerCode(null);
+      setStatus('idle');
+      // Optional: set a message/notification here if desired
+    }
+
     function onPartnerDisconnected() {
       setPartnerCode(null);
       setStatus('idle');
@@ -67,6 +73,7 @@ export const useSocket = () => {
     socket.on('pairing-requested', onPairingRequested);
     socket.on('pairing-accepted', onPairingAccepted);
     socket.on('pairing-rejected', onPairingRejected);
+    socket.on('pairing-ended', onPairingEnded);
     socket.on('partner-disconnected', onPartnerDisconnected);
 
     return () => {
@@ -77,6 +84,7 @@ export const useSocket = () => {
       socket.off('pairing-requested', onPairingRequested);
       socket.off('pairing-accepted', onPairingAccepted);
       socket.off('pairing-rejected', onPairingRejected);
+      socket.off('pairing-ended', onPairingEnded);
       socket.off('partner-disconnected', onPartnerDisconnected);
       socket.disconnect();
     };
@@ -100,6 +108,10 @@ export const useSocket = () => {
       }
     }
   }, [incomingRequest]);
+
+  const disconnectPairing = useCallback(() => {
+    socket.emit('end-pairing');
+  }, []);
   
   const clearError = useCallback(() => setError(null), []);
 
@@ -113,6 +125,7 @@ export const useSocket = () => {
     error,
     requestPairing,
     respondToPairing,
+    disconnectPairing,
     clearError
   };
 };

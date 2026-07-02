@@ -13,6 +13,7 @@ const TransferPage = () => {
     error,
     requestPairing,
     respondToPairing,
+    disconnectPairing,
     clearError
   } = useSocket();
   
@@ -83,9 +84,15 @@ const TransferPage = () => {
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Connected!</h2>
               <p className="text-gray-400 mb-6">You are securely paired with device:</p>
-              <div className="bg-white/5 px-6 py-3 rounded-xl border border-white/10 font-mono text-xl text-white tracking-widest">
+              <div className="bg-white/5 px-6 py-3 rounded-xl border border-white/10 font-mono text-xl text-white tracking-widest mb-8">
                 {partnerCode}
               </div>
+              <button 
+                onClick={disconnectPairing}
+                className="px-6 py-2 rounded-full border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-colors"
+              >
+                Disconnect
+              </button>
             </div>
           ) : (
             <>
