@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { Share2, Smartphone, Monitor, AlertCircle, Loader2 } from 'lucide-react';
 import { useSocket } from '../hooks/useSocket';
+import { useWebRTC } from '../hooks/useWebRTC';
 import PairingRequestModal from '../components/PairingRequestModal';
+import DragDropZone from '../components/DragDropZone';
+import SelectedFileList from '../components/SelectedFileList';
+import TransferCard from '../components/TransferCard';
+import ReceivedFilesList from '../components/ReceivedFilesList';
+import EmptyState from '../components/EmptyState';
 
 const TransferPage = () => {
   const { 
@@ -11,6 +17,7 @@ const TransferPage = () => {
     status,
     incomingRequest,
     error,
+    isInitiator,
     requestPairing,
     respondToPairing,
     disconnectPairing,
@@ -18,6 +25,24 @@ const TransferPage = () => {
   } = useSocket();
   
   const [targetCodeInput, setTargetCodeInput] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  
+  const { connectionState, activeTransfers, receivedFiles, sendFiles } = useWebRTC(isInitiator, status);
+
+  const handleFilesSelected = (files) => {
+    setSelectedFiles(prev => [...prev, ...Array.from(files)]);
+  };
+
+  const removeSelectedFile = (index) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSend = () => {
+    if (selectedFiles.length > 0) {
+      sendFiles(selectedFiles);
+      setSelectedFiles([]);
+    }
+  };
 
   const handleConnect = (e) => {
     e.preventDefault();
@@ -78,21 +103,41 @@ const TransferPage = () => {
         <div className="glass rounded-3xl p-8 border border-white/10 flex flex-col justify-between relative overflow-hidden">
           
           {status === 'connected' ? (
-            <div className="flex flex-col items-center justify-center text-center h-full">
-              <div className="w-24 h-24 rounded-full bg-green-500/20 border border-green-500/30 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
-                <Share2 className="w-12 h-12 text-green-400" />
+            <div className="flex flex-col h-full overflow-hidden overflow-y-auto custom-scrollbar">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">File Transfer</h2>
+                  <p className="text-gray-400 text-sm flex items-center gap-2">
+                    Partner: {partnerCode} 
+                    <span className={`inline-block w-2 h-2 rounded-full ${connectionState === 'connected' ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]' : connectionState === 'connecting' ? 'bg-yellow-400 animate-pulse' : 'bg-red-400'}`}></span>
+                  </p>
+                </div>
+                <button 
+                  onClick={disconnectPairing}
+                  className="px-4 py-1.5 rounded-full border border-red-500/30 text-red-400 hover:bg-red-500/10 text-sm transition-colors"
+                >
+                  Disconnect
+                </button>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Connected!</h2>
-              <p className="text-gray-400 mb-6">You are securely paired with device:</p>
-              <div className="bg-white/5 px-6 py-3 rounded-xl border border-white/10 font-mono text-xl text-white tracking-widest mb-8">
-                {partnerCode}
-              </div>
-              <button 
-                onClick={disconnectPairing}
-                className="px-6 py-2 rounded-full border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-colors"
-              >
-                Disconnect
-              </button>
+          
+              <DragDropZone onFilesSelected={handleFilesSelected} />
+              
+              <SelectedFileList files={selectedFiles} onRemove={removeSelectedFile} onSend={handleSend} />
+              
+              {Object.values(activeTransfers).length > 0 && (
+                <div className="mt-8 space-y-3">
+                  <h3 className="text-lg font-medium text-white mb-4">Active Transfers</h3>
+                  {Object.values(activeTransfers).map(transfer => (
+                    <TransferCard key={transfer.id} transfer={transfer} />
+                  ))}
+                </div>
+              )}
+          
+              <ReceivedFilesList files={receivedFiles} />
+              
+              {Object.values(activeTransfers).length === 0 && (!selectedFiles || selectedFiles.length === 0) && receivedFiles.length === 0 && (
+                <EmptyState />
+              )}
             </div>
           ) : (
             <>

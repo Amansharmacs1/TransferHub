@@ -9,6 +9,7 @@ export const useSocket = () => {
   const [status, setStatus] = useState('idle'); // idle, requesting, incoming_request, connected
   const [incomingRequest, setIncomingRequest] = useState(null); // { requesterId, requesterCode }
   const [error, setError] = useState(null);
+  const [isInitiator, setIsInitiator] = useState(false);
 
   useEffect(() => {
     socket.connect();
@@ -25,6 +26,7 @@ export const useSocket = () => {
       setPairingCode(null);
       setPartnerCode(null);
       setStatus('idle');
+      setIsInitiator(false);
       console.log('Disconnected');
     }
     
@@ -36,6 +38,7 @@ export const useSocket = () => {
     function onPairingError({ message }) {
       setError(message);
       setStatus('idle');
+      setIsInitiator(false);
     }
 
     function onPairingRequested(data) {
@@ -52,17 +55,20 @@ export const useSocket = () => {
     function onPairingRejected({ message }) {
       setError(message);
       setStatus('idle');
+      setIsInitiator(false);
     }
 
     function onPairingEnded({ message }) {
       setPartnerCode(null);
       setStatus('idle');
+      setIsInitiator(false);
       // Optional: set a message/notification here if desired
     }
 
     function onPartnerDisconnected() {
       setPartnerCode(null);
       setStatus('idle');
+      setIsInitiator(false);
       setError('Partner disconnected.');
     }
 
@@ -93,11 +99,13 @@ export const useSocket = () => {
   const requestPairing = useCallback((targetCode) => {
     setError(null);
     setStatus('requesting');
+    setIsInitiator(true);
     socket.emit('request-pairing', { targetCode });
   }, []);
 
   const respondToPairing = useCallback((accept) => {
     if (incomingRequest) {
+      setIsInitiator(false);
       socket.emit('pairing-response', { 
         requesterId: incomingRequest.requesterId, 
         accept 
@@ -123,6 +131,7 @@ export const useSocket = () => {
     status,
     incomingRequest,
     error,
+    isInitiator,
     requestPairing,
     respondToPairing,
     disconnectPairing,

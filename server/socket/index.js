@@ -114,6 +114,29 @@ const initializeSocket = (io) => {
         }
       }
     });
+
+    // --- WebRTC Signaling ---
+    socket.on('webrtc-offer', (data) => {
+      const device = deviceRegistry.getDeviceBySocketId(socket.id);
+      if (device && device.partnerId && device.status === 'connected') {
+        io.to(device.partnerId).emit('webrtc-offer', data);
+      }
+    });
+
+    socket.on('webrtc-answer', (data) => {
+      const device = deviceRegistry.getDeviceBySocketId(socket.id);
+      if (device && device.partnerId && device.status === 'connected') {
+        io.to(device.partnerId).emit('webrtc-answer', data);
+      }
+    });
+
+    socket.on('webrtc-ice-candidate', (data) => {
+      const device = deviceRegistry.getDeviceBySocketId(socket.id);
+      if (device && device.partnerId && device.status === 'connected') {
+        io.to(device.partnerId).emit('webrtc-ice-candidate', data);
+      }
+    });
+
   });
 };
 
