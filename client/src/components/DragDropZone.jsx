@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react';
-import { UploadCloud } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import { UploadCloud, FolderUp, FileUp } from 'lucide-react';
 
 const DragDropZone = ({ onFilesSelected }) => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
+  const folderInputRef = useRef(null);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -15,12 +16,51 @@ const DragDropZone = ({ onFilesSelected }) => {
     setIsDragging(false);
   };
 
-  const handleDrop = (e) => {
+  const traverseFileTree = async (item, path = '') => {
+    return new Promise((resolve) => {
+      if (item.isFile) {
+        item.file((file) => {
+          // You could attach the relative path here if needed: file.filepath = path + file.name;
+          resolve([file]);
+        });
+      } else if (item.isDirectory) {
+        const dirReader = item.createReader();
+        dirReader.readEntries(async (entries) => {
+          let files = [];
+          for (let i = 0; i < entries.length; i++) {
+            const result = await traverseFileTree(entries[i], path + item.name + '/');
+            files = files.concat(result);
+          }
+          resolve(files);
+        });
+      }
+    });
+  };
+
+  const handleDrop = async (e) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      onFilesSelected(e.dataTransfer.files);
-      e.dataTransfer.clearData();
+    
+    if (!e.dataTransfer.items) {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        onFilesSelected(e.dataTransfer.files);
+      }
+      return;
+    }
+
+    let allFiles = [];
+    const items = e.dataTransfer.items;
+    
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i].webkitGetAsEntry();
+      if (item) {
+        const files = await traverseFileTree(item);
+        allFiles = allFiles.concat(files);
+      }
+    }
+    
+    if (allFiles.length > 0) {
+      onFilesSelected(allFiles);
     }
   };
 
@@ -33,7 +73,7 @@ const DragDropZone = ({ onFilesSelected }) => {
 
   return (
     <div 
-      className={`border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center text-center transition-all ${
+      className={`border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center text-center transition-all duration-300 ${
         isDragging 
           ? 'border-primary-500 bg-primary-500/10 scale-[1.02]' 
           : 'border-white/20 bg-white/5 hover:border-primary-500/50 hover:bg-white/10'
@@ -49,20 +89,39 @@ const DragDropZone = ({ onFilesSelected }) => {
         ref={fileInputRef} 
         onChange={handleFileChange}
       />
+      <input 
+        type="file" 
+        webkitdirectory="true"
+        directory="true"
+        multiple 
+        className="hidden" 
+        ref={folderInputRef} 
+        onChange={handleFileChange}
+      />
       
-      <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mb-6 shadow-lg">
-        <UploadCloud className={`w-10 h-10 ${isDragging ? 'text-primary-400' : 'text-gray-400'}`} />
+      <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-xl transition-all duration-300 ${isDragging ? 'bg-primary-500/20 scale-110' : 'bg-black/20'}`}>
+        <UploadCloud className={`w-12 h-12 transition-colors duration-300 ${isDragging ? 'text-primary-400' : 'text-gray-400'}`} />
       </div>
       
-      <h3 className="text-2xl font-bold text-white mb-2">Drag & Drop Files Here</h3>
-      <p className="text-gray-400 mb-8">Send images, videos, audio, and documents securely.</p>
+      <h3 className="text-2xl font-bold text-white mb-2">Drag & Drop Files or Folders</h3>
+      <p className="text-gray-400 mb-8 max-w-sm">Send images, videos, documents, or entire folders securely.</p>
       
-      <button 
-        onClick={() => fileInputRef.current.click()}
-        className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-8 py-3 rounded-full font-medium transition-colors"
-      >
-        Browse Files
-      </button>
+      <div className="flex gap-4">
+        <button 
+          onClick={() => fileInputRef.current.click()}
+          className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2"
+        >
+          <FileUp className="w-4 h-4" />
+          Select Files
+        </button>
+        <button 
+          onClick={() => folderInputRef.current.click()}
+          className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2"
+        >
+          <FolderUp className="w-4 h-4" />
+          Select Folder
+        </button>
+      </div>
     </div>
   );
 };

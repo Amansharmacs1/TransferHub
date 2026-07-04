@@ -1,19 +1,20 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import MainLayout from './layouts/MainLayout';
-import LandingPage from './pages/LandingPage';
+import { Routes, Route } from 'react-router-dom';
+import DashboardLayout from './layouts/DashboardLayout';
 import TransferPage from './pages/TransferPage';
-import './App.css';
+import ClipboardPage from './pages/ClipboardPage';
+import HistoryPage from './pages/HistoryPage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/transfer" element={<TransferPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route element={<DashboardLayout />}>
+        <Route path="/" element={<TransferPage />} />
+        <Route path="/clipboard" element={<ClipboardPage />} />
+        <Route path="/history" element={<HistoryPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Route>
+    </Routes>
   );
 }
 
