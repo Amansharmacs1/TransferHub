@@ -20,6 +20,7 @@ export const WebRTCProvider = ({ children }) => {
   const [connectionState, setConnectionState] = useState('disconnected');
   const [activeTransfers, setActiveTransfers] = useState({});
   const [receivedFiles, setReceivedFiles] = useState([]);
+  const [receivedClipboards, setReceivedClipboards] = useState([]);
   
   const pc = useRef(null);
   const dc = useRef(null);
@@ -79,9 +80,18 @@ export const WebRTCProvider = ({ children }) => {
 
     setConnectionState('connecting');
 
-    const peerConnection = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-    });
+    const iceServers = [{ urls: 'stun:stun.l.google.com:19302' }];
+    
+    // Add TURN server if provided via environment variables (for production)
+    if (import.meta.env.VITE_TURN_URL) {
+      iceServers.push({
+        urls: import.meta.env.VITE_TURN_URL,
+        username: import.meta.env.VITE_TURN_USERNAME,
+        credential: import.meta.env.VITE_TURN_CREDENTIAL,
+      });
+    }
+
+    const peerConnection = new RTCPeerConnection({ iceServers });
     pc.current = peerConnection;
 
     peerConnection.onicecandidate = (event) => {
@@ -92,9 +102,24 @@ export const WebRTCProvider = ({ children }) => {
 
     peerConnection.onconnectionstatechange = () => {
       setConnectionState(peerConnection.connectionState);
+      console.log('WebRTC state changed to:', peerConnection.connectionState);
+      if (peerConnection.connectionState === 'failed') {
+        error('WebRTC connection failed. Please ensure both devices are on the same network or use a TURN server.');
+      }
+      
+      if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed') {
+        // Attempt ICE Restart if initiator
+        if (isInitiator) {
+          peerConnection.createOffer({ iceRestart: true })
+            .then(offer => peerConnection.setLocalDescription(offer))
+            .then(() => socket.emit('webrtc-offer', peerConnection.localDescription))
+            .catch(err => console.error('ICE restart failed', err));
+        }
+      }
     };
 
     const setupDataChannel = (channel) => {
+      dc.current = channel;
       channel.binaryType = 'arraybuffer';
       channel.bufferedAmountLowThreshold = 64 * 1024 * 2; // 128KB
 
@@ -116,10 +141,13 @@ export const WebRTCProvider = ({ children }) => {
           const message = JSON.parse(event.data);
           
           if (message.type === 'clipboard') {
+            const clipboardData = { id: Math.random().toString(36).substr(2,9), text: message.data, timestamp: Date.now() };
+            setReceivedClipboards(prev => [clipboardData, ...prev]);
+            
             navigator.clipboard.writeText(message.data).then(() => {
               success('Copied text from partner to clipboard!');
             }).catch(() => {
-              info(`Received text: ${message.data}`);
+              info('Received new clipboard text! View it in the Clipboard tab.');
             });
             return;
           }
@@ -211,8 +239,6 @@ export const WebRTCProvider = ({ children }) => {
           }
         }
       };
-      
-      dc.current = channel;
     };
 
     if (isInitiator) {
@@ -228,28 +254,41 @@ export const WebRTCProvider = ({ children }) => {
 
     const handleOffer = async (offer) => {
       if (!pc.current) return;
+      console.log('Received WebRTC Offer');
       try {
         await pc.current.setRemoteDescription(new RTCSessionDescription(offer));
         while (iceCandidateQueue.current.length > 0) {
-          await pc.current.addIceCandidate(new RTCIceCandidate(iceCandidateQueue.current.shift()));
+          try {
+            await pc.current.addIceCandidate(new RTCIceCandidate(iceCandidateQueue.current.shift()));
+          } catch (e) {
+            console.error('Failed to add queued ice candidate in offer', e);
+          }
         }
         const answer = await pc.current.createAnswer();
         await pc.current.setLocalDescription(answer);
+        console.log('Sending WebRTC Answer');
         socket.emit('webrtc-answer', pc.current.localDescription);
       } catch (err) {
         console.error('Error handling offer', err);
+        error('Failed to handle connection offer');
       }
     };
 
     const handleAnswer = async (answer) => {
       if (!pc.current) return;
+      console.log('Received WebRTC Answer');
       try {
         await pc.current.setRemoteDescription(new RTCSessionDescription(answer));
         while (iceCandidateQueue.current.length > 0) {
-          await pc.current.addIceCandidate(new RTCIceCandidate(iceCandidateQueue.current.shift()));
+          try {
+            await pc.current.addIceCandidate(new RTCIceCandidate(iceCandidateQueue.current.shift()));
+          } catch (e) {
+            console.error('Failed to add queued ice candidate in answer', e);
+          }
         }
       } catch (err) {
         console.error('Error handling answer', err);
+        error('Failed to handle connection answer');
       }
     };
 
@@ -280,6 +319,8 @@ export const WebRTCProvider = ({ children }) => {
 
   const processSendQueue = async () => {
     if (isSending.current || !dc.current || dc.current.readyState !== 'open' || sendQueue.current.length === 0) {
+      if (!dc.current) info('Debug: dc is null');
+      else if (dc.current.readyState !== 'open') info('Debug: readyState is ' + dc.current.readyState);
       return;
     }
 
@@ -294,6 +335,7 @@ export const WebRTCProvider = ({ children }) => {
     }
 
     try {
+      info('Debug: sending file-start for ' + file.name);
       dc.current.send(JSON.stringify({
         type: 'file-start',
         metadata: { id, name: file.name, size: file.size, fileType: file.type }
@@ -440,6 +482,7 @@ export const WebRTCProvider = ({ children }) => {
       connectionState,
       activeTransfers,
       receivedFiles,
+      receivedClipboards,
       sendFiles,
       pauseTransfer,
       resumeTransfer,

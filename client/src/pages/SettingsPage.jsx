@@ -38,74 +38,74 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="h-full flex flex-col gap-6">
+    <div className="h-full flex flex-col gap-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
-        <p className="text-gray-400">Manage your device identity and application preferences.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-2">Settings</h1>
+        <p className="text-muted-foreground text-sm font-medium">Manage your device identity and application preferences.</p>
       </div>
 
-      <div className="glass rounded-3xl p-8 border border-white/10 max-w-2xl">
-        <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-          <User className="w-5 h-5 text-primary-400" />
+      <div className="bg-card rounded-3xl p-8 border border-border max-w-2xl shadow-sm">
+        <h2 className="text-xl font-semibold tracking-tight text-foreground mb-6 flex items-center gap-2">
+          <User className="w-5 h-5 text-primary" />
           Device Identity
         </h2>
         
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Device Name</label>
+            <label className="block text-sm font-semibold text-foreground mb-2">Device Name</label>
             <div className="flex gap-4">
               <input 
                 type="text" 
                 value={deviceName}
                 onChange={(e) => setDeviceName(e.target.value)}
-                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-colors"
+                className="input-field flex-1 text-base"
                 placeholder="Enter a name for this device"
               />
               <button 
                 onClick={handleSaveName}
-                className="bg-primary-600 hover:bg-primary-500 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                className="btn-primary px-6"
               >
                 Save
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-2">This name will be visible to devices you connect with in future updates.</p>
+            <p className="text-xs font-medium text-muted-foreground mt-2">This name will be visible to devices you connect with in future updates.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-black/20 border border-white/5 rounded-xl p-4 flex flex-col">
-              <span className="text-xs text-gray-500 uppercase tracking-wider mb-1">Operating System</span>
-              <div className="flex items-center gap-2 text-white font-medium">
-                <Laptop className="w-4 h-4 text-gray-400" />
+            <div className="bg-muted/30 border border-border rounded-xl p-4 flex flex-col shadow-sm">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Operating System</span>
+              <div className="flex items-center gap-2 text-foreground font-medium text-sm mt-1">
+                <Laptop className="w-4 h-4 text-muted-foreground" />
                 {systemInfo.os}
               </div>
             </div>
-            <div className="bg-black/20 border border-white/5 rounded-xl p-4 flex flex-col">
-              <span className="text-xs text-gray-500 uppercase tracking-wider mb-1">Browser</span>
-              <div className="flex items-center gap-2 text-white font-medium">
-                <Monitor className="w-4 h-4 text-gray-400" />
+            <div className="bg-muted/30 border border-border rounded-xl p-4 flex flex-col shadow-sm">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Browser</span>
+              <div className="flex items-center gap-2 text-foreground font-medium text-sm mt-1">
+                <Monitor className="w-4 h-4 text-muted-foreground" />
                 {systemInfo.browser}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="h-px bg-white/10 my-8"></div>
+        <div className="h-px bg-border my-8"></div>
 
-        <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-          <Settings className="w-5 h-5 text-secondary-400" />
+        <h2 className="text-xl font-semibold tracking-tight text-foreground mb-6 flex items-center gap-2">
+          <Settings className="w-5 h-5 text-primary" />
           Appearance
         </h2>
 
-        <div className="flex items-center justify-between bg-black/20 border border-white/5 rounded-xl p-4">
+        <div className="flex items-center justify-between bg-muted/30 border border-border rounded-xl p-4 shadow-sm">
           <div>
-            <h3 className="text-white font-medium">Theme Preference</h3>
-            <p className="text-sm text-gray-400">Toggle between light and dark mode</p>
+            <h3 className="text-foreground font-medium">Theme Preference</h3>
+            <p className="text-sm font-medium text-muted-foreground mt-0.5">Toggle between light and dark mode</p>
           </div>
           <button 
             onClick={toggleTheme}
-            className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-colors"
+            className="w-12 h-12 rounded-full bg-background border border-border flex items-center justify-center transition-colors hover:bg-muted/50 shadow-sm"
           >
-            {theme === 'dark' ? <Moon className="w-5 h-5 text-blue-400" /> : <Sun className="w-5 h-5 text-yellow-400" />}
+            {theme === 'dark' ? <Moon className="w-5 h-5 text-indigo-400" /> : <Sun className="w-5 h-5 text-yellow-500" />}
           </button>
         </div>
       </div>

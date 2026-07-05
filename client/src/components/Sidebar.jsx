@@ -16,25 +16,25 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-64 h-full glass border-r border-white/10 flex flex-col">
+    <div className="w-64 h-full bg-background border-r border-border flex flex-col">
       <div className="p-6 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center">
-          <Share2 className="w-6 h-6 text-primary-500" />
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+          <Share2 className="w-5 h-5 text-primary" />
         </div>
-        <h1 className="text-xl font-bold text-gradient">TransferHub</h1>
+        <h1 className="text-xl font-bold tracking-tight text-foreground">TransferHub</h1>
       </div>
 
-      <nav className="flex-1 px-4 space-y-2 mt-4">
+      <nav className="flex-1 px-4 space-y-1 mt-2">
         {navItems.map(item => {
           const isActive = location.pathname === item.path;
           return (
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm font-medium ${
                 isActive 
-                  ? 'bg-primary-500/10 text-primary-400 font-medium' 
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-accent text-accent-foreground' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
               }`}
             >
               {item.icon}
@@ -44,27 +44,27 @@ const Sidebar = () => {
         })}
       </nav>
 
-      <div className="p-4 m-4 rounded-xl bg-black/20 border border-white/5">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Connection</h3>
+      <div className="p-4 m-4 rounded-xl bg-muted/30 border border-border">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Connection</h3>
         
         {status === 'connected' ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-gray-300">
-                <Laptop className="w-4 h-4 text-green-400" />
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Laptop className="w-4 h-4 text-primary" />
                 {partnerCode}
               </div>
-              <span className={`w-2 h-2 rounded-full ${connectionState === 'connected' ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]' : connectionState === 'connecting' ? 'bg-yellow-400 animate-pulse' : 'bg-red-400'}`}></span>
+              <span className={`w-2 h-2 rounded-full ${connectionState === 'connected' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : connectionState === 'connecting' ? 'bg-yellow-500 animate-pulse' : 'bg-destructive'}`}></span>
             </div>
             <button 
               onClick={disconnectPairing}
-              className="w-full text-xs py-2 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
+              className="w-full text-xs py-2 rounded-lg border border-destructive/20 text-destructive hover:bg-destructive/10 transition-colors font-medium"
             >
               Disconnect
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Monitor className="w-4 h-4" />
             Not connected
           </div>

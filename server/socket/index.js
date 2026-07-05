@@ -22,7 +22,11 @@ const initializeSocket = (io) => {
     });
 
     // Handle pairing request from this socket to a target code
-    socket.on('request-pairing', ({ targetCode }) => {
+    socket.on('request-pairing', (data) => {
+      if (!data || typeof data.targetCode !== 'string' || data.targetCode.length !== 6) {
+        return socket.emit('pairing-error', { message: 'Invalid payload.' });
+      }
+      const { targetCode } = data;
       const targetDevice = deviceRegistry.getDeviceByCode(targetCode);
       const thisDevice = deviceRegistry.getDeviceBySocketId(socket.id);
 
@@ -50,7 +54,11 @@ const initializeSocket = (io) => {
     });
 
     // Handle response to a pairing request
-    socket.on('pairing-response', ({ requesterId, accept }) => {
+    socket.on('pairing-response', (data) => {
+      if (!data || typeof data.requesterId !== 'string' || typeof data.accept !== 'boolean') {
+        return;
+      }
+      const { requesterId, accept } = data;
       const requesterDevice = deviceRegistry.getDeviceBySocketId(requesterId);
       const thisDevice = deviceRegistry.getDeviceBySocketId(socket.id);
 
@@ -116,7 +124,10 @@ const initializeSocket = (io) => {
     });
 
     // --- WebRTC Signaling ---
+    const validateWebRTC = (data) => data && typeof data === 'object';
+
     socket.on('webrtc-offer', (data) => {
+      if (!validateWebRTC(data)) return;
       const device = deviceRegistry.getDeviceBySocketId(socket.id);
       if (device && device.partnerId && device.status === 'connected') {
         io.to(device.partnerId).emit('webrtc-offer', data);
@@ -124,6 +135,7 @@ const initializeSocket = (io) => {
     });
 
     socket.on('webrtc-answer', (data) => {
+      if (!validateWebRTC(data)) return;
       const device = deviceRegistry.getDeviceBySocketId(socket.id);
       if (device && device.partnerId && device.status === 'connected') {
         io.to(device.partnerId).emit('webrtc-answer', data);
@@ -131,6 +143,7 @@ const initializeSocket = (io) => {
     });
 
     socket.on('webrtc-ice-candidate', (data) => {
+      if (!validateWebRTC(data)) return;
       const device = deviceRegistry.getDeviceBySocketId(socket.id);
       if (device && device.partnerId && device.status === 'connected') {
         io.to(device.partnerId).emit('webrtc-ice-candidate', data);

@@ -17,7 +17,6 @@ export const useSocket = () => {
     function onConnect() {
       setIsConnected(true);
       setSocketId(socket.id);
-      console.log(`Connected: ${socket.id}`);
     }
 
     function onDisconnect() {
@@ -27,7 +26,6 @@ export const useSocket = () => {
       setPartnerCode(null);
       setStatus('idle');
       setIsInitiator(false);
-      console.log('Disconnected');
     }
     
     function onInit({ socketId, pairingCode }) {

@@ -14,26 +14,26 @@ const ReceivedFilesList = ({ files }) => {
 
   return (
     <div className="mt-8">
-      <h3 className="text-lg font-medium text-white mb-4">
+      <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
         Received Files ({files.length})
       </h3>
       
       <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
         {files.map((file, index) => (
-          <div key={index} className="bg-primary-900/20 border border-primary-500/20 rounded-xl p-3 flex items-center gap-3 transition-colors hover:bg-primary-900/40">
-            <div className="w-10 h-10 rounded-lg bg-black/40 flex items-center justify-center flex-shrink-0">
-              <FileIcon className="w-5 h-5 text-primary-400" />
+          <div key={index} className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center gap-3 transition-all hover:bg-primary/10 hover:shadow-md hover:border-primary/40 shadow-sm">
+            <div className="w-10 h-10 rounded-lg bg-background flex items-center justify-center flex-shrink-0 border border-primary/20">
+              <FileIcon className="w-5 h-5 text-primary" />
             </div>
             
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-white font-medium truncate">{file.name}</p>
-              <p className="text-xs text-primary-400/80">{formatBytes(file.size)}</p>
+              <p className="text-sm text-foreground font-medium truncate">{file.name}</p>
+              <p className="text-xs text-primary/80 font-medium">{formatBytes(file.size)}</p>
             </div>
             
             <a 
               href={file.blobUrl} 
               download={file.name}
-              className="p-2 text-primary-400 hover:text-white hover:bg-primary-500 rounded-full transition-colors"
+              className="p-2 text-primary hover:text-primary-foreground hover:bg-primary rounded-full transition-colors"
               title="Download file"
             >
               <Download className="w-4 h-4" />

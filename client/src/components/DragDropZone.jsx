@@ -3,8 +3,6 @@ import { UploadCloud, FolderUp, FileUp } from 'lucide-react';
 
 const DragDropZone = ({ onFilesSelected }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef(null);
-  const folderInputRef = useRef(null);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -43,7 +41,7 @@ const DragDropZone = ({ onFilesSelected }) => {
     
     if (!e.dataTransfer.items) {
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        onFilesSelected(e.dataTransfer.files);
+        onFilesSelected(Array.from(e.dataTransfer.files));
       }
       return;
     }
@@ -66,8 +64,9 @@ const DragDropZone = ({ onFilesSelected }) => {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      onFilesSelected(e.target.files);
-      e.target.value = null; // reset input
+      const selectedFilesArray = Array.from(e.target.files);
+      onFilesSelected(selectedFilesArray);
+      e.target.value = ''; // reset input
     }
   };
 
@@ -75,52 +74,46 @@ const DragDropZone = ({ onFilesSelected }) => {
     <div 
       className={`border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center text-center transition-all duration-300 ${
         isDragging 
-          ? 'border-primary-500 bg-primary-500/10 scale-[1.02]' 
-          : 'border-white/20 bg-white/5 hover:border-primary-500/50 hover:bg-white/10'
+          ? 'border-primary bg-primary/5 scale-[1.02] shadow-md' 
+          : 'border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50 hover:shadow-lg'
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <input 
-        type="file" 
-        multiple 
-        className="hidden" 
-        ref={fileInputRef} 
-        onChange={handleFileChange}
-      />
-      <input 
-        type="file" 
-        webkitdirectory="true"
-        directory="true"
-        multiple 
-        className="hidden" 
-        ref={folderInputRef} 
-        onChange={handleFileChange}
-      />
+
       
-      <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-xl transition-all duration-300 ${isDragging ? 'bg-primary-500/20 scale-110' : 'bg-black/20'}`}>
-        <UploadCloud className={`w-12 h-12 transition-colors duration-300 ${isDragging ? 'text-primary-400' : 'text-gray-400'}`} />
+      <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-sm transition-all duration-300 ${isDragging ? 'bg-primary/20 scale-110' : 'bg-background border border-border'}`}>
+        <UploadCloud className={`w-12 h-12 transition-colors duration-300 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
       </div>
       
-      <h3 className="text-2xl font-bold text-white mb-2">Drag & Drop Files or Folders</h3>
-      <p className="text-gray-400 mb-8 max-w-sm">Send images, videos, documents, or entire folders securely.</p>
+      <h3 className="text-2xl font-bold tracking-tight text-foreground mb-2">Drag & Drop Files or Folders</h3>
+      <p className="text-muted-foreground mb-8 max-w-sm font-medium text-sm">Send images, videos, documents, or entire folders securely.</p>
       
       <div className="flex gap-4">
-        <button 
-          onClick={() => fileInputRef.current.click()}
-          className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2"
-        >
+        <label className="btn-secondary px-6 py-3 relative cursor-pointer overflow-hidden">
           <FileUp className="w-4 h-4" />
           Select Files
-        </button>
-        <button 
-          onClick={() => folderInputRef.current.click()}
-          className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2"
-        >
+          <input 
+            type="file" 
+            multiple 
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+            onChange={handleFileChange}
+          />
+        </label>
+        
+        <label className="btn-secondary px-6 py-3 relative cursor-pointer overflow-hidden">
           <FolderUp className="w-4 h-4" />
           Select Folder
-        </button>
+          <input 
+            type="file" 
+            webkitdirectory="true"
+            directory="true"
+            multiple 
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+            onChange={handleFileChange}
+          />
+        </label>
       </div>
     </div>
   );
