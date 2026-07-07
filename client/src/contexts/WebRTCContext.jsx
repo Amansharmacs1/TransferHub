@@ -30,8 +30,10 @@ export const WebRTCProvider = ({ children }) => {
   const receivedSize = useRef(0);
   const incomingMetadata = useRef(null);
   
-  // Send state queue
+  const peerConnectionRef = useRef(null);
+  const dataChannelRef = useRef(null);
   const sendQueue = useRef([]);
+  const pendingOfferRef = useRef(null);
   const isSending = useRef(false);
   const iceCandidateQueue = useRef([]);
 
@@ -80,7 +82,8 @@ export const WebRTCProvider = ({ children }) => {
 
     setConnectionState('connecting');
 
-    const iceServers = [{ urls: 'stun:stun.l.google.com:19302' }];
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const iceServers = isLocalhost ? [] : [{ urls: 'stun:stun.l.google.com:19302' }];
     
     // Add TURN server if provided via environment variables (for production)
     if (import.meta.env.VITE_TURN_URL) {
@@ -93,6 +96,7 @@ export const WebRTCProvider = ({ children }) => {
 
     const peerConnection = new RTCPeerConnection({ iceServers });
     pc.current = peerConnection;
+    peerConnectionRef.current = peerConnection;
 
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
@@ -120,6 +124,7 @@ export const WebRTCProvider = ({ children }) => {
 
     const setupDataChannel = (channel) => {
       dc.current = channel;
+      dataChannelRef.current = channel;
       channel.binaryType = 'arraybuffer';
       channel.bufferedAmountLowThreshold = 64 * 1024 * 2; // 128KB
 
@@ -242,20 +247,27 @@ export const WebRTCProvider = ({ children }) => {
     };
 
     if (isInitiator) {
+      console.log('I am initiator, creating data channel');
       const channel = peerConnection.createDataChannel('fileTransfer', { ordered: true });
       setupDataChannel(channel);
       peerConnection.createOffer()
-        .then(offer => peerConnection.setLocalDescription(offer))
-        .then(() => socket.emit('webrtc-offer', peerConnection.localDescription))
-        .catch(console.error);
+        .then(offer => { console.log('Created offer'); return peerConnection.setLocalDescription(offer); })
+        .then(() => { console.log('Set local desc, sending offer'); socket.emit('webrtc-offer', peerConnection.localDescription); })
+        .catch(err => console.error('Offer error:', err));
     } else {
+      console.log('I am receiver, waiting for data channel');
       peerConnection.ondatachannel = (event) => setupDataChannel(event.channel);
     }
 
     const handleOffer = async (offer) => {
-      if (!pc.current) return;
-      console.log('Received WebRTC Offer');
+      console.log('Received WebRTC Offer in handleOffer');
+      if (!peerConnectionRef.current) {
+        console.log('Peer connection not ready yet, saving pending offer');
+        pendingOfferRef.current = offer;
+        return;
+      }
       try {
+        console.log('Setting remote description from offer');
         await pc.current.setRemoteDescription(new RTCSessionDescription(offer));
         while (iceCandidateQueue.current.length > 0) {
           try {
@@ -275,9 +287,10 @@ export const WebRTCProvider = ({ children }) => {
     };
 
     const handleAnswer = async (answer) => {
-      if (!pc.current) return;
-      console.log('Received WebRTC Answer');
+      console.log('Received WebRTC Answer in handleAnswer');
+      if (!peerConnectionRef.current) return;
       try {
+        console.log('Setting remote description from answer');
         await pc.current.setRemoteDescription(new RTCSessionDescription(answer));
         while (iceCandidateQueue.current.length > 0) {
           try {
@@ -308,6 +321,14 @@ export const WebRTCProvider = ({ children }) => {
     socket.on('webrtc-offer', handleOffer);
     socket.on('webrtc-answer', handleAnswer);
     socket.on('webrtc-ice-candidate', handleIceCandidate);
+
+    // Process any pending offer that arrived before connection was ready
+    if (!isInitiator && pendingOfferRef.current) {
+      console.log('Processing pending offer now that connection is ready');
+      const offer = pendingOfferRef.current;
+      pendingOfferRef.current = null;
+      handleOffer(offer);
+    }
 
     return () => {
       socket.off('webrtc-offer', handleOffer);
