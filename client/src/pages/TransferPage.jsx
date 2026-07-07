@@ -55,8 +55,8 @@ const TransferPage = () => {
           onAccept={() => respondToPairing(true)}
           onReject={() => respondToPairing(false)}
         />
-        <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8">
-          <div className="bg-card border border-border rounded-2xl p-8 flex flex-col items-center justify-center text-center relative overflow-hidden group shadow-sm">
+        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+          <div className="bg-card border border-border rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center text-center relative overflow-hidden group shadow-sm">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/50 opacity-50"></div>
             <div className="w-20 h-20 rounded-2xl bg-muted/50 border border-border flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform duration-300">
               <Monitor className="w-10 h-10 text-foreground opacity-80" />
@@ -64,8 +64,8 @@ const TransferPage = () => {
             <h2 className="text-xl font-medium text-foreground mb-2">Your Device Code</h2>
             <div className="my-6 w-full">
               {pairingCode ? (
-                <div className="bg-muted/30 border border-border rounded-2xl py-6 px-4 shadow-inner">
-                  <span className="text-5xl font-mono font-bold tracking-[0.2em] text-primary">{pairingCode}</span>
+                <div className="bg-muted/30 border border-border rounded-2xl py-6 px-2 sm:px-4 shadow-inner">
+                  <span className="text-4xl sm:text-5xl font-mono font-bold tracking-widest sm:tracking-[0.2em] text-primary">{pairingCode}</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-[104px]">
@@ -88,7 +88,7 @@ const TransferPage = () => {
             </p>
           </div>
 
-          <div className="bg-card border border-border rounded-2xl p-8 flex flex-col justify-between relative overflow-hidden shadow-sm">
+          <div className="bg-card border border-border rounded-2xl p-6 md:p-8 flex flex-col justify-between relative overflow-hidden shadow-sm">
             <div>
               <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6 shadow-sm">
                 <Smartphone className="w-8 h-8 text-primary" />
@@ -102,7 +102,7 @@ const TransferPage = () => {
                     value={targetCodeInput}
                     onChange={(e) => setTargetCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
                     placeholder="e.g. A1B2C3" 
-                    className="input-field h-14 text-center text-2xl font-mono tracking-[0.2em] uppercase"
+                    className="input-field h-14 text-center text-xl sm:text-2xl font-mono tracking-widest sm:tracking-[0.2em] uppercase"
                     disabled={status === 'requesting'}
                   />
                 </div>
@@ -136,7 +136,7 @@ const TransferPage = () => {
         <p className="text-muted-foreground text-sm font-medium">Secure, peer-to-peer file transfer directly between devices.</p>
       </div>
 
-      <div className="bg-card border border-border rounded-2xl p-8 shadow-sm">
+      <div className="bg-card border border-border rounded-2xl p-4 md:p-8 shadow-sm">
         <DragDropZone onFilesSelected={handleFilesSelected} />
       </div>
 

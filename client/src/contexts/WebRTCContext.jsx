@@ -82,8 +82,13 @@ export const WebRTCProvider = ({ children }) => {
 
     setConnectionState('connecting');
 
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const iceServers = isLocalhost ? [] : [{ urls: 'stun:stun.l.google.com:19302' }];
+    const iceServers = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' }
+    ];
     
     // Add TURN server if provided via environment variables (for production)
     if (import.meta.env.VITE_TURN_URL) {

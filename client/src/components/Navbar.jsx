@@ -34,7 +34,7 @@ const Navbar = () => {
               className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border border-white/10"
             >
               <GithubIcon className="w-4 h-4" />
-              <span>GitHub</span>
+              <span className="hidden sm:inline">GitHub</span>
             </a>
           </div>
         </div>
