@@ -9,10 +9,10 @@ const Sidebar = () => {
   const { connectionState } = useWebRTCContext();
 
   const navItems = [
-    { name: 'Transfers', path: '/', icon: <Share2 className="w-6 h-6 md:w-5 md:h-5" /> },
-    { name: 'Clipboard', path: '/clipboard', icon: <Clipboard className="w-6 h-6 md:w-5 md:h-5" /> },
-    { name: 'History', path: '/history', icon: <History className="w-6 h-6 md:w-5 md:h-5" /> },
-    { name: 'Settings', path: '/settings', icon: <Settings className="w-6 h-6 md:w-5 md:h-5" /> },
+    { name: 'Transfers', path: '/app', icon: <Share2 className="w-6 h-6 md:w-5 md:h-5" /> },
+    { name: 'Clipboard', path: '/app/clipboard', icon: <Clipboard className="w-6 h-6 md:w-5 md:h-5" /> },
+    { name: 'History', path: '/app/history', icon: <History className="w-6 h-6 md:w-5 md:h-5" /> },
+    { name: 'Settings', path: '/app/settings', icon: <Settings className="w-6 h-6 md:w-5 md:h-5" /> },
   ];
 
   return (

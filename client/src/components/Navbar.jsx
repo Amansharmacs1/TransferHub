@@ -26,16 +26,22 @@ const Navbar = () => {
             </div>
           </div>
           
-          <div>
+          <div className="flex items-center gap-4">
             <a 
               href="https://github.com/Amansharmacs1/TransferHub" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border border-white/10"
+              className="hidden sm:flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border border-white/10"
             >
               <GithubIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">GitHub</span>
+              <span>GitHub</span>
             </a>
+            <Link 
+              to="/app" 
+              className="flex items-center gap-2 bg-primary hover:opacity-90 text-primary-foreground px-4 py-2 rounded-full text-sm font-medium transition-all duration-200"
+            >
+              Launch App
+            </Link>
           </div>
         </div>
       </div>

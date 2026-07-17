@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import DashboardLayout from './layouts/DashboardLayout';
+import MainLayout from './layouts/MainLayout';
 import ErrorBoundary from './components/ErrorBoundary';
 import NetworkStatus from './components/NetworkStatus';
 import { Loader2 } from 'lucide-react';
@@ -11,6 +12,7 @@ const ClipboardPage = lazy(() => import('./pages/ClipboardPage'));
 const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 
 // Loading fallback
 const PageLoader = () => (
@@ -25,11 +27,14 @@ function App() {
       <NetworkStatus />
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route element={<DashboardLayout />}>
-            <Route path="/" element={<TransferPage />} />
-            <Route path="/clipboard" element={<ClipboardPage />} />
-            <Route path="/history" element={<HistoryPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<LandingPage />} />
+          </Route>
+          <Route path="/app" element={<DashboardLayout />}>
+            <Route index element={<TransferPage />} />
+            <Route path="clipboard" element={<ClipboardPage />} />
+            <Route path="history" element={<HistoryPage />} />
+            <Route path="settings" element={<SettingsPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
